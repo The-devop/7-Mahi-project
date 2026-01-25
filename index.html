@@ -2,6 +2,13 @@
 <html lang="en" class="dark-mode">
 
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        marked.setOptions({
+            gfm: true,
+            breaks: true
+        });
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LMS - Revolutionary Learning Management System</title>
@@ -17,9 +24,96 @@
             box-sizing: border-box;
         }
 
+        /* Better markdown spacing for analysis output */
+        .markdown ul {
+            margin-top: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .markdown li {
+            margin-bottom: 0.8rem;
+            line-height: 1.7;
+        }
+
+        /* Prevent ultra-long lines */
+        .feedback-text,
+        .suggestions {
+            max-width: 900px;
+        }
+
+        /* Improve recommendations card */
+        .suggestions {
+            background: rgba(16, 185, 129, 0.08);
+            border-left: 4px solid var(--success);
+        }
+
+        .message-content.markdown table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        .message-content.markdown th,
+        .message-content.markdown td {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.6rem 0.8rem;
+            text-align: left;
+        }
+
+        .message-content.markdown th {
+            background: rgba(255, 255, 255, 0.08);
+            font-weight: 600;
+        }
+
+        .message-content.markdown tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+
         html {
             scroll-behavior: smooth;
         }
+
+        .message-content.markdown {
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .message-content.markdown p {
+            margin-bottom: 0.8rem;
+        }
+
+        .message-content.markdown ul,
+        .message-content.markdown ol {
+            padding-left: 1.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .message-content.markdown li {
+            margin-bottom: 0.4rem;
+        }
+
+        .message-content.markdown strong {
+            font-weight: 600;
+        }
+
+        .message-content.markdown code {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.2rem 0.4rem;
+            border-radius: 6px;
+            font-family: "Space Mono", monospace;
+            font-size: 0.85rem;
+        }
+
+        .message-content.markdown pre {
+            background: rgba(0, 0, 0, 0.35);
+            padding: 1rem;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
 
         :root {
             --light-mode: 1;
@@ -564,6 +658,10 @@
         .subject-students {
             color: var(--text-secondary);
             font-size: 0.9rem;
+        }
+
+        .stat-box {
+            display: none;
         }
 
         .subject-progress {
@@ -1948,7 +2046,7 @@
                                     <option value="Easy">Easy</option>
                                     <option value="Medium">Medium</option>
                                     <option value="Hard">Hard</option>
-                                    <option value="Mixed">Mixed</option>
+                                    <option value="Easy,Medium,Hard">Mixed</option>
                                 </select>
                             </div>
 
@@ -1969,7 +2067,7 @@
                                     <option value="MCQ">Multiple Choice</option>
                                     <option value="ShortAnswer">Short Answer</option>
                                     <option value="Essay">Essay</option>
-                                    <option value="Mixed">Mixed</option>
+                                    <option value="MCQ, ShortAnswer and Essay">Mixed</option>
                                 </select>
                             </div>
 
@@ -2024,67 +2122,51 @@
                 </div>
 
                 <div class="analysis-result" id="analysisResult">
-                    <div class="analysis-header">
-                        <div>
-                            <h2>Analysis Report</h2>
-                            <p class="file-name" id="fileName"></p>
-                        </div>
-                        <button
-                            style="background: transparent; border: 1px solid var(--border); color: var(--text-secondary); padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer;"
-                            onclick="resetAnalysis()">Analyze Another</button>
-                    </div>
 
+                    <!-- Rating Section -->
                     <div class="stats-grid">
                         <div class="stat-box">
-                            <div class="stat-number" id="wordCount">0</div>
-                            <div class="stat-label">Words Analyzed</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-number" id="readingLevel">--</div>
-                            <div class="stat-label">Reading Level</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-number" id="completeness">0%</div>
-                            <div class="stat-label">Content Completeness</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-number" id="accuracy">0%</div>
-                            <div class="stat-label">Grammar Accuracy</div>
+                            <div class="stat-number">
+                                <span id="ratingText">0</span>
+                                <span style="font-size:0.9rem; color:var(--text-secondary)"> / 10</span>
+                            </div>
+                            <div style="margin-bottom:0.4rem; font-size:0.85rem; color:var(--text-secondary)">
+                                Performance Score
+                            </div>
+
+                            <div class="stat-label">Overall Rating (Out of 10)</div>
+
+                            <div
+                                style="margin-top: 0.8rem; background: var(--border); height: 8px; border-radius: 6px; overflow: hidden;">
+                                <div id="ratingBar"
+                                    style="height:100%; width:0%; background:linear-gradient(90deg,#10b981,#059669); transition: width 0.6s ease;">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
+                    <!-- Overall Assessment -->
                     <div class="feedback-section">
-                        <h3>Detailed Analysis</h3>
-                        <div class="feedback-item">
-                            <div class="feedback-label">Content Quality</div>
-                            <div class="feedback-text" id="contentQuality"></div>
-                        </div>
-                        <div class="feedback-item">
-                            <div class="feedback-label">Structure & Organization</div>
-                            <div class="feedback-text" id="structure"></div>
-                        </div>
-                        <div class="feedback-item">
-                            <div class="feedback-label">Clarity & Language</div>
-                            <div class="feedback-text" id="clarity"></div>
-                        </div>
-                        <div class="feedback-item">
-                            <div class="feedback-label">Overall Assessment</div>
-                            <div class="feedback-text" id="assessment"></div>
-                        </div>
+                        <h3>Overall Assessment</h3>
+                        <div class="feedback-text markdown" id="assessment"></div>
                     </div>
 
+                    <!-- Recommendations -->
                     <div class="suggestions">
                         <h3>Recommendations</h3>
-                        <div id="suggestionsContent"></div>
+                        <div class="markdown" id="suggestionsContent"></div>
                     </div>
 
-                    <button
-                        style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 25px; cursor: pointer; margin-top: 2rem; font-weight: 600;"
-                        onclick="downloadReport()">
-                        Download Report
-                    </button>
                 </div>
-            </section>
+
+
+                <button
+                    style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 25px; cursor: pointer; margin-top: 2rem; font-weight: 600;"
+                    onclick="downloadReport()">
+                    Download Report
+                </button>
+        </div>
+        </section>
         </div>
 
         <!-- DOUBT SOLVER PAGE -->
@@ -2136,510 +2218,364 @@
     </footer>
 
     <script>
-        // THEME TOGGLE
+        /* =========================
+           THEME
+        ========================= */
+
         function toggleTheme() {
             const html = document.documentElement;
-            const isDarkMode = html.classList.contains('dark-mode');
-            const themeIcon = document.getElementById('themeIcon');
-
-            if (isDarkMode) {
-                html.classList.remove('dark-mode');
-                themeIcon.textContent = '🌙';
-                localStorage.setItem('theme', 'light');
-            } else {
-                html.classList.add('dark-mode');
-                themeIcon.textContent = '☀️';
-                localStorage.setItem('theme', 'dark');
-            }
+            const icon = document.getElementById("themeIcon");
+            html.classList.toggle("dark-mode");
+            icon.textContent = html.classList.contains("dark-mode") ? "☀️" : "🌙";
         }
 
-        // Initialize theme from localStorage
-        function initTheme() {
-            const html = document.documentElement;
-            const themeIcon = document.getElementById('themeIcon');
+        (function initTheme() {
+            document.documentElement.classList.add("dark-mode");
+        })();
 
-            html.classList.remove('light-mode');
-            themeIcon.textContent = '☀️';
+        /* =========================
+           PAGE NAVIGATION
+        ========================= */
 
-            localStorage.setItem('theme', 'dark');
-        }
-
-        // Initialize theme on page load
-        initTheme();
-
-        // PAGE NAVIGATION
         function navigateTo(page) {
-            const pages = document.querySelectorAll('.page');
-            pages.forEach(p => p.classList.remove('active'));
-
-            let pageId = page + '-page';
-            const targetPage = document.getElementById(pageId);
-            if (targetPage) {
-                targetPage.classList.add('active');
+            document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+            const target = document.getElementById(page + "-page");
+            if (target) {
+                target.classList.add("active");
                 window.scrollTo(0, 0);
             }
         }
 
-        function goToSection(sectionId) {
-            navigateTo('home');
+        function goToSection(id) {
+            navigateTo("home");
             setTimeout(() => {
-                const element = document.getElementById(sectionId);
-                if (element) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
+                document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
             }, 100);
         }
 
-        // PARTICLES
-        function createParticles() {
-            const container = document.getElementById('particles');
-            if (!container) return;
-            for (let i = 0; i < 50; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.top = Math.random() * 100 + '%';
-                particle.style.animationDelay = Math.random() * 5 + 's';
-                particle.style.animationDuration = (Math.random() * 20 + 20) + 's';
-                container.appendChild(particle);
-            }
-        }
+        /* =========================
+           AI CORE
+        ========================= */
 
-        // NCERT LINKS
-        const ncertLinks = {
-            'math': {
-                1: [
-                    { subject: 'Math Grade 1-5', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ],
-                6: [
-                    { subject: 'Math Grade 6-8', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ],
-                9: [
-                    { subject: 'Math Grade 9-10', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ],
-                11: [
-                    { subject: 'Math Grade 11-12', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ]
-            },
-            'science': {
-                1: [
-                    { subject: 'Science Grade 1-5', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ],
-                6: [
-                    { subject: 'Science Grade 6-8', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ],
-                9: [
-                    { subject: 'Science Grade 9-10', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ],
-                11: [
-                    { subject: 'Science Grade 11-12', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ]
-            },
-            'english': {
-                1: [
-                    { subject: 'English Grade 1-5', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ],
-                6: [
-                    { subject: 'English Grade 6-8', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ],
-                9: [
-                    { subject: 'English Grade 9-10', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ],
-                11: [
-                    { subject: 'English Grade 11-12', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ]
-            },
-            'social-studies': {
-                1: [
-                    { subject: 'Social Studies Grade 1-5', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ],
-                6: [
-                    { subject: 'Social Studies Grade 6-8', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ],
-                9: [
-                    { subject: 'Social Studies Grade 9-10', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ],
-                11: [
-                    { subject: 'Social Studies Grade 11-12', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ]
-            },
-            'computer-science': {
-                1: [
-                    { subject: 'CS Grade 1-5', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ],
-                6: [
-                    { subject: 'CS Grade 6-8', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ],
-                9: [
-                    { subject: 'CS Grade 9-10', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ],
-                11: [
-                    { subject: 'CS Grade 11-12', url: 'https://ncert.nic.in/' },
-                    { subject: 'View NCERT Portal', url: 'https://ncert.nic.in/textbook.php' }
-                ]
-            }
-        };
-
-        function showSubjectGrade(subject, grade, event) {
-            const buttons = event.target.parentElement.querySelectorAll('.grade-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-
-            const linksContainer = document.getElementById(`${subject}-ncert-links`);
-            linksContainer.innerHTML = '';
-
-            const links = ncertLinks[subject]?.[grade] || [];
-            links.forEach(link => {
-                const linkElement = document.createElement('a');
-                linkElement.className = 'ncert-link';
-                linkElement.href = link.url;
-                linkElement.target = '_blank';
-                linkElement.innerHTML = `<strong>${link.subject}</strong><br><small>Click to open</small>`;
-                linksContainer.appendChild(linkElement);
+        async function callGroq(messages, temperature = 0.5, maxTokens = 300) {
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    messages,
+                    temperature,
+                    max_tokens: maxTokens
+                })
             });
-        }
 
-        // WORKSHEET GENERATOR
-        const sampleQuestions = {
-            'Mathematics': {
-                'Easy': ['Solve: 2x + 5 = 15', 'What is 25% of 200?', 'Calculate: 12 × 8', 'Find area of rectangle 5×3', 'Sum of angles in triangle?'],
-                'Medium': ['Solve: x² - 5x + 6 = 0', 'If 3a + 2b = 15 and a - b = 2, find a and b', 'Volume of sphere radius 5cm', 'Derivative of f(x) = 3x² + 2x + 1', 'Solve: |2x - 4| = 10'],
-                'Hard': ['Infinite geometric series sum', 'Complex roots of z⁴ + 1 = 0', 'Prove √2 is irrational', 'Limit of sin(x)/x as x→0', 'Taylor series expansion']
-            },
-            'Science': {
-                'Easy': ['What is photosynthesis?', 'Three states of matter?', 'Chemical formula for water?', 'Define velocity', 'Main organs in digestive system?'],
-                'Medium': ['Explain cellular respiration', 'Greenhouse effect and climate', 'Water cycle details', 'Conservation of energy', 'Osmosis and diffusion'],
-                'Hard': ['Derive E=mc² and explain', 'Quantum entanglement', 'Protein structure and function', 'Natural selection and evolution', 'Big Bang theory']
-            },
-            'English': {
-                'Easy': ['Define alliteration', 'What is a metaphor?', 'Noun vs verb difference', 'Past tense of write?', 'Three punctuation marks?'],
-                'Medium': ['Analyze theme in literature', 'Literary devices in paragraph', 'Symbolism significance', 'Tone and mood', 'Essay characteristics'],
-                'Hard': ['Compare two authors styles', 'Narrative structure analysis', 'Postmodernism in literature', 'Historical context impact', 'Literary theory critique']
-            },
-            'Social Studies': {
-                'Easy': ['Capital of India?', 'Three branches of government?', 'What is democracy?', 'Name continents', 'India independence year?'],
-                'Medium': ['Causes of major events', 'Industrial Revolution impact', 'Important leaders role', 'GDP concept', 'Indian Constitution features'],
-                'Hard': ['UN effectiveness analysis', 'Socioeconomic factors', 'Climate change geopolitics', 'Ancient civilizations', 'Globalization impact']
-            },
-            'Computer Science': {
-                'Easy': ['Hardware vs software?', 'Define variable', 'What is algorithm?', 'Three languages?', 'What is database?'],
-                'Medium': ['OOP concept', 'Binary search complexity', 'Stack vs queue', 'Inheritance in OOP', 'HTML rendering'],
-                'Hard': ['Algorithm design', 'Machine learning algorithms', 'Web security issues', 'Distributed systems', 'Database schema design']
-            }
-        };
-
-        document.getElementById('worksheetForm')?.addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            const subject = document.getElementById('subject').value;
-            const grade = document.getElementById('grade').value;
-            const difficulty = document.getElementById('difficulty').value;
-            const numQuestions = parseInt(document.getElementById('numQuestions').value);
-            const topic = document.getElementById('topic').value;
-            const format = document.getElementById('format').value;
-
-            const preview = document.getElementById('worksheetPreview');
-            const previewTitle = document.getElementById('previewTitle');
-            const previewSubtitle = document.getElementById('previewSubtitle');
-            const worksheetContent = document.getElementById('worksheetContent');
-
-            previewTitle.textContent = `${subject} Worksheet - ${topic}`;
-            previewSubtitle.textContent = `Grade: ${grade} | Difficulty: ${difficulty} | Format: ${format}`;
-
-            let questions = sampleQuestions[subject]?.[difficulty] || [];
-
-            let worksheetHTML = '';
-            for (let i = 0; i < numQuestions; i++) {
-                const question = questions[i % questions.length] || `Question ${i + 1}`;
-                worksheetHTML += `
-                    <div class="question">
-                        <div class="question-number">Q${i + 1}</div>
-                        <p>${question}</p>
-                    </div>
-                `;
+            if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(errText);
             }
 
-            worksheetContent.innerHTML = worksheetHTML;
-            preview.classList.add('show');
-            setTimeout(() => preview.scrollIntoView({ behavior: 'smooth' }), 100);
-        });
 
-        function downloadWorksheet() {
-            const subject = document.getElementById('subject').value;
-            const topic = document.getElementById('topic').value;
-            const text = `${subject} Worksheet - ${topic}\n${new Date().toLocaleDateString()}\n\n` +
-                document.getElementById('worksheetContent').innerText;
-
-            const element = document.createElement('a');
-            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-            element.setAttribute('download', `${subject}_${topic}_worksheet.txt`);
-            element.click();
+            const data = await res.json();
+            return data.choices?.[0]?.message?.content?.trim();
         }
 
-        // PDF ANALYZER
-        document.getElementById('fileInput')?.addEventListener('change', function (e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (event) {
-                    performAnalysis(event.target.result, file.name);
-                };
-                if (file.type.includes('text') || file.name.endsWith('.txt')) {
-                    reader.readAsText(file);
-                } else {
-                    performAnalysis('Sample document content', file.name);
-                }
-            }
-        });
 
-        function performAnalysis(content, fileName) {
-            const words = content.split(/\s+/).length;
-            const completeness = Math.min(100, Math.floor((words / 500) * 100));
-            const accuracy = Math.floor(Math.random() * 15 + 85);
+        /* =========================
+           CHAT (ALL SUBJECTS)
+        ========================= */
 
-            document.getElementById('fileName').textContent = `File: ${fileName}`;
-            document.getElementById('wordCount').textContent = words;
-            document.getElementById('readingLevel').textContent = 'Intermediate';
-            document.getElementById('completeness').textContent = completeness + '%';
-            document.getElementById('accuracy').textContent = accuracy + '%';
-            document.getElementById('contentQuality').textContent = 'Good content coverage with relevant examples.';
-            document.getElementById('structure').textContent = 'Clear logical flow and organization.';
-            document.getElementById('clarity').textContent = 'Writing is clear and easy to understand.';
-            document.getElementById('assessment').textContent = 'Well-written and comprehensive document.';
-            document.getElementById('suggestionsContent').innerHTML =
-                '<div class="suggestion-item">Add more specific examples</div>' +
-                '<div class="suggestion-item">Improve paragraph transitions</div>' +
-                '<div class="suggestion-item">Expand key concepts</div>';
-
-            document.getElementById('analysisResult').classList.add('show');
-            setTimeout(() => document.getElementById('analysisResult').scrollIntoView({ behavior: 'smooth' }), 100);
-        }
-
-        function resetAnalysis() {
-            document.getElementById('fileInput').value = '';
-            document.getElementById('analysisResult').classList.remove('show');
-        }
-
-        function downloadReport() {
-            const text = `ANALYSIS REPORT\n${new Date().toLocaleDateString()}\n\nWords: ${document.getElementById('wordCount').textContent}\nAccuracy: ${document.getElementById('accuracy').textContent}`;
-            const element = document.createElement('a');
-            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-            element.setAttribute('download', 'report.txt');
-            element.click();
-        }
-
-        // DOUBT SOLVER
-        const answers = {
-            'algebra': 'Algebra is the branch of mathematics that uses letters (variables) to represent unknown numbers. In solving equations like 2x + 3 = 7, you isolate the variable by performing the same operation on both sides. The key is to maintain balance - what you do to one side, you must do to the other.',
-            'photosynthesis': 'Photosynthesis is how plants convert sunlight into chemical energy stored as glucose. It occurs in chloroplasts and has two stages: Light Reactions (in thylakoids, produces ATP) and Calvin Cycle (in stroma, produces glucose). The overall equation: 6CO2 + 6H2O + light energy → C6H12O6 + 6O2.',
-            'osmosis': 'Osmosis is the movement of water molecules across a semipermeable membrane from areas of high water concentration to low water concentration. This is crucial for cell function - it helps cells maintain proper hydration and nutrient balance.',
-            'mitochondria': 'Mitochondria are often called the powerhouses of cells because they produce ATP (adenosine triphosphate) through cellular respiration. This energy molecule fuels all cellular activities. Mitochondria have their own DNA and are thought to have originated as separate organisms.',
-            'dna': 'DNA (deoxyribonucleic acid) is a molecule that carries genetic information in a double helix structure. It consists of base pairs (A-T and G-C) that code for proteins. DNA is responsible for heredity - passing traits from parents to offspring.',
-            'function': 'A function is a reusable block of code that performs a specific task. It can accept input (parameters) and return output. Functions help organize code, reduce repetition, and make programs easier to understand and maintain.',
-            'democracy': 'Democracy is a system of government where power belongs to the people, typically through voting and participation. Key features include: free speech, fair elections, rule of law, and protection of individual rights. It can be direct (all citizens vote) or representative (elected officials decide).',
-            'climate change': 'Climate change refers to long-term shifts in global temperatures and weather patterns. It\'s primarily caused by greenhouse gases (CO2, methane) from human activities like burning fossil fuels and deforestation. Effects include rising sea levels, extreme weather, and biodiversity loss.',
-            'fraction': 'A fraction represents a part of a whole, with numerator (top) showing parts and denominator (bottom) showing total parts. Percentages are fractions out of 100. Decimals are another way to express fractions. These can be converted between each other: 1/2 = 0.5 = 50%.',
-            'default': 'That\'s a great question! I\'m your AI educational tutor. I can help explain concepts, solve problems, provide examples, and discuss applications. To get the best answer, try being specific about: What topic (math, science, English, history, etc.)? What level (elementary, middle, high school)? What specifically about it interests you?'
-        };
-
-        function quickSelect(subject) {
-            const input = document.getElementById('questionInput');
-            input.value = `Tell me about ${subject}. `;
-            input.focus();
-        }
-
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                sendQuestion();
-            }
-        }
-
-        function sendQuestion() {
-            const input = document.getElementById('questionInput');
-            const question = input.value.trim();
-            if (!question) return;
-
-            const chatMessages = document.getElementById('chatMessages');
-
-            const userMsg = document.createElement('div');
-            userMsg.className = 'message user';
-            userMsg.innerHTML = `<div class="message-content">${question}</div>`;
-            chatMessages.appendChild(userMsg);
-            input.value = '';
-
-            const loadingMsg = document.createElement('div');
-            loadingMsg.className = 'message ai';
-            loadingMsg.innerHTML = `<div class="message-content"><div class="loading"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div></div></div>`;
-            chatMessages.appendChild(loadingMsg);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-
-            callLLMAPI(question, chatMessages, loadingMsg, input);
-        }
-
-        async function callLLMAPI(question, chatMessages, loadingMsg, input) {
+        async function callLLMAPI(question, container, loadingMsg, input, subject = "General") {
             try {
-                let answer = await tryMistralAPI(question);
-
-                if (!answer) {
-                    answer = generateLocalResponse(question);
-                }
-
-                if (loadingMsg && loadingMsg.parentNode) {
-                    loadingMsg.remove();
-                }
-
-                const aiMsg = document.createElement('div');
-                aiMsg.className = 'message ai';
-                aiMsg.innerHTML = `<div class="message-content">${answer}</div>`;
-                chatMessages.appendChild(aiMsg);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                input.focus();
-            } catch (error) {
-                console.error('API Error:', error);
-                if (loadingMsg && loadingMsg.parentNode) {
-                    loadingMsg.remove();
-                }
-
-                const fallbackAnswer = generateLocalResponse(question);
-                const aiMsg = document.createElement('div');
-                aiMsg.className = 'message ai';
-                aiMsg.innerHTML = `<div class="message-content">${fallbackAnswer}</div>`;
-                chatMessages.appendChild(aiMsg);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                input.focus();
-            }
-        }
-
-        async function tryMistralAPI(question) {
-            try {
-                const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": "Bearer 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"
+                const answer = await callGroq([
+                    {
+                        role: "system",
+                        content: `You are a strict but helpful ${subject} teacher.
+Explain step by step.
+Simple language.
+No emojis.
+No filler.`
                     },
-                    body: JSON.stringify({
-                        model: "openai/gpt-oss-120b",
-                        messages: [
-                            {
-                                role: "system",
-                                content: "You are an educational AI tutor. Answer questions clearly and concisely in 2-3 sentences."
-                            },
-                            {
-                                role: "user",
-                                content: question
-                            }
-                        ],
-                        temperature: 0.7,
-                        max_tokens: 150
-                    })
-                });
+                    { role: "user", content: question }
+                ]);
 
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.choices && data.choices[0] && data.choices[0].message) {
-                        return data.choices[0].message.content.trim();
-                    }
-                }
-            } catch (e) {
-                console.log('Groq API unavailable, using local response');
-            }
-            return null;
-        }
+                loadingMsg.remove();
 
-        function generateLocalResponse(question) {
-            const qLower = question.toLowerCase();
+                const aiMsg = document.createElement("div");
+                aiMsg.className = "message ai";
+                const fixedAnswer = answer
+                    .replace(/\r\n/g, "\n")
+                    .replace(/\r/g, "\n");
 
-            const responses = {
-                'algebra|equation|variable|solve': 'Algebra is the branch of mathematics that uses letters (variables) to represent unknown numbers. In solving equations like 2x + 3 = 7, you isolate the variable by performing the same operation on both sides. The key is to maintain balance - what you do to one side, you must do to the other.',
-                'photosynthesis|plant|chlorophyll|energy': 'Photosynthesis is how plants convert sunlight into chemical energy stored as glucose. It occurs in chloroplasts and has two stages: Light Reactions (in thylakoids, produces ATP) and Calvin Cycle (in stroma, produces glucose). The overall equation: 6CO2 + 6H2O + light energy → C6H12O6 + 6O2.',
-                'default': 'That\'s a great question! I\'m your AI educational tutor. I can help explain concepts, solve problems, provide examples, and discuss applications. To get the best answer, try being specific about: What topic (math, science, English, history, etc.)? What level (elementary, middle, high school)? What specifically about it interests you?'
-            };
+                aiMsg.innerHTML = `
+                <div class="message-content markdown">
+                    ${marked.parse(fixedAnswer)}
+                </div>
+                `;
 
-            for (const [keywords, response] of Object.entries(responses)) {
-                const keywordArray = keywords.split('|');
-                if (keywordArray.some(keyword => qLower.includes(keyword))) {
-                    return response;
-                }
+                container.appendChild(aiMsg);
+
+            } catch (err) {
+                console.error("AI error:", err.message);
             }
 
-            return responses.default;
-        }
-
-        // SUBJECT PAGE CHAT FUNCTIONS
-        function handleSubjectChatKeyPress(event, chatId) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                sendSubjectChatMessage(chatId);
-            }
+            container.scrollTop = container.scrollHeight;
+            input.focus();
         }
 
         function sendSubjectChatMessage(chatId) {
             const container = document.getElementById(chatId);
-            const input = container.nextElementSibling.querySelector('.chat-input');
+            const input = container.nextElementSibling.querySelector(".chat-input");
             const question = input.value.trim();
             if (!question) return;
 
-            const userMsg = document.createElement('div');
-            userMsg.className = 'message user';
-            userMsg.innerHTML = `<div class="message-content">${question}</div>`;
-            container.appendChild(userMsg);
-            input.value = '';
+            container.innerHTML += `<div class="message user"><div class="message-content">${question}</div></div>`;
+            input.value = "";
 
-            const loadingMsg = document.createElement('div');
-            loadingMsg.className = 'message ai';
-            loadingMsg.innerHTML = `<div class="message-content"><div class="loading"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div></div></div>`;
-            container.appendChild(loadingMsg);
-            container.scrollTop = container.scrollHeight;
+            const loading = document.createElement("div");
+            loading.className = "message ai";
+            loading.innerHTML = `<div class="message-content">Thinking…</div>`;
+            container.appendChild(loading);
 
-            callLLMAPI(question, container, loadingMsg, input);
+            callLLMAPI(question, container, loading, input, chatId.replace("-chat", ""));
         }
 
-        // SCROLL REVEAL
-        function revealOnScroll() {
-            document.querySelectorAll('.reveal').forEach(element => {
-                const elementTop = element.getBoundingClientRect().top;
-                if (elementTop < window.innerHeight - 100) {
-                    element.classList.add('active');
-                }
-            });
-        }
+        /* =========================
+           WORKSHEET GENERATOR (REAL AI)
+        ========================= */
 
-        // INITIALIZE
-        createParticles();
-        window.addEventListener('scroll', revealOnScroll);
-        revealOnScroll();
+        document.getElementById("worksheetForm")?.addEventListener("submit", async e => {
+            e.preventDefault();
 
-        // Initialize NCERT for all subjects
-        ['math', 'science', 'english', 'social-studies', 'computer-science'].forEach(subject => {
-            const container = document.getElementById(`${subject}-ncert-links`);
-            if (container) {
-                const parentDiv = container.parentElement;
-                const btn = parentDiv.querySelector('.grade-btn');
-                if (btn) showSubjectGrade(subject, 1, { target: btn });
+            const subject = document.getElementById("subject").value;
+            const grade = document.getElementById("grade").value;
+            const difficulty = document.getElementById("difficulty").value;
+            const topic = document.getElementById("topic").value;
+            const count = document.getElementById("numQuestions").value;
+            const format = document.getElementById("format").value;
+
+            const preview = document.getElementById("worksheetPreview");
+            const content = document.getElementById("worksheetContent");
+
+            content.innerHTML = "Generating worksheet…";
+            preview.classList.add("show");
+
+            try {
+                const worksheet = await callGroq([
+                    {
+                        role: "system",
+                        content: `You are an expert ${subject} teacher creating worksheets.
+                                  Return numbered questions only.
+                                  Do not include any instructions or formatting other than the questions. Each question should be on a new line.
+                                  If it is a MCQ, provide 4 options (A, B, C, D) for each question and the questions should be on one line and the options ONLY on the next line.
+                                  DO NOT LEAVE A LINE BETWEEN QUESTIONS.`
+                    },
+                    {
+                        role: "user",
+                        content: `Create ${count} questions with ${difficulty} questions and this is the format:${format}. questions on ${topic} for ${grade}.
+                        do not include any instructions or formatting other than the questions. Each question should be on a new line.
+                        If it is a MCQ, provide 4 options (A, B, C, D) for each question and the questions should be on one line and the options ONLY on the next line.
+                        DO NOT LEAVE A LINE BETWEEN QUESTIONS.`
+                    }
+                ], 0.6, 800);
+
+                content.innerHTML = worksheet
+                    .split("\n")
+                    .map(q => `<div class="question"><p>${q}</p></div>`)
+                    .join("");
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById("assessment").textContent =
+                    "Analysis failed. Check console.";
+            }
+
+        });
+
+        /* =========================
+           PDF ANALYZER (REAL AI)
+        ========================= */
+
+        document.getElementById("fileInput")?.addEventListener("change", async e => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const text = await file.text();
+
+            document.getElementById("analysisResult").classList.add("show");
+
+            try {
+                const analysis = await callGroq([
+                    {
+                        role: "system",
+                        content: `You are a school teacher reviewing a student's academic work.
+
+                                OUTPUT RULES (VERY IMPORTANT):
+                                - Do NOT use headings
+                                - Do NOT repeat section titles
+                                - Do NOT add extra sections
+                                - Write in simple student-friendly language
+                                - No grammar checking
+
+                                STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS:
+
+                                OVERALL_ASSESSMENT:
+                                (one clear paragraph)
+
+                                RATING:
+                                (X/10 with one short justification)
+
+                                PLACES_TO_IMPROVE:
+                                - Each bullet must be ONE clear sentence
+                                - Do NOT repeat the same mistake
+                                - Max 5 bullets
+                                - Be concise and specific
+                                `
+                    },
+                    {
+                        role: "user",
+                        content: text
+                    }
+                ], 0.4, 500);
+
+
+                const overall = analysis.match(/OVERALL_ASSESSMENT:\s*([\s\S]*?)RATING:/)?.[1] || "";
+                const rating = analysis.match(/RATING:\s*([\s\S]*?)PLACES_TO_IMPROVE:/)?.[1] || "";
+                const improve = analysis.match(/PLACES_TO_IMPROVE:\s*([\s\S]*)/)?.[1] || "";
+
+                const ratingMatch = rating.match(/(\d+)\s*\/\s*10/);
+                const score = ratingMatch ? parseInt(ratingMatch[1]) : 0;
+                const percent = Math.min((score / 10) * 100, 100);
+
+
+                document.getElementById("ratingText").textContent = `${score} / 10`;
+
+                const bar = document.getElementById("ratingBar");
+                bar.style.width = "0%";
+
+                setTimeout(() => {
+                    bar.style.width = percent + "%";
+                }, 100);
+
+
+                document.getElementById("assessment").innerHTML =
+                    marked.parse(overall.trim());
+
+                document.getElementById("suggestionsContent").innerHTML =
+                    marked.parse(improve.trim());
+
+
+
+
+            } catch {
+                document.getElementById("assessment").textContent = "Analysis failed.";
             }
         });
+
+        /* =========================
+           MISC
+        ========================= */
+
+        function handleSubjectChatKeyPress(e, id) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                sendSubjectChatMessage(id);
+            }
+        }
+
+        let selectedSubject = "General";
+
+        function quickSelect(subject) {
+            selectedSubject = subject;
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                sendQuestion();
+            }
+        }
+
+        async function sendQuestion() {
+            const input = document.getElementById("questionInput");
+            const chat = document.getElementById("chatMessages");
+            const question = input.value.trim();
+            if (!question) return;
+
+            chat.innerHTML += `
+        <div class="message user">
+            <div class="message-content">${question}</div>
+        </div>
+    `;
+            input.value = "";
+
+            const loading = document.createElement("div");
+            loading.className = "message ai";
+            loading.innerHTML = `<div class="message-content">Thinking…</div>`;
+            chat.appendChild(loading);
+
+            try {
+                const answer = await callGroq([
+                    {
+                        role: "system",
+                        content: `You are a helpful tutor.
+                          FORMAT RULES:
+                          - Use Markdown
+                          - Use headings (##)
+                          - Use bullet points
+                          - Use short paragraphs
+                          - Use code blocks when needed
+                          - Do NOT use HTML
+                          - No emojis
+                          SUBJECT: ${selectedSubject}`
+
+                    },
+                    { role: "user", content: question }
+                ]);
+
+                loading.remove();
+
+                const fixedAnswer = answer
+                    .replace(/\r\n/g, "\n")
+                    .replace(/\r/g, "\n");
+
+                chat.innerHTML += `
+  <div class="message ai">
+    <div class="message-content markdown">
+      ${marked.parse(fixedAnswer)}
+    </div>
+  </div>
+`;
+            } catch {
+                loading.remove();
+                chat.innerHTML += `
+            <div class="message ai">
+                <div class="message-content">⚠️ AI service unavailable.</div>
+            </div>
+        `;
+            }
+
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        const reveals = document.querySelectorAll(".reveal");
+
+        function revealOnScroll() {
+            for (const el of reveals) {
+                const windowHeight = window.innerHeight;
+                const elementTop = el.getBoundingClientRect().top;
+                const revealPoint = 100;
+
+                if (elementTop < windowHeight - revealPoint) {
+                    el.classList.add("active");
+                }
+            }
+        }
+
+        window.addEventListener("scroll", revealOnScroll);
+        revealOnScroll();
+
+
     </script>
+
 </body>
 
 </html>
