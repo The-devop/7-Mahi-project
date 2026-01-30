@@ -3,11 +3,35 @@
 
 <head>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
     <script>
         marked.setOptions({
             gfm: true,
             breaks: true
         });
+        
+        // Custom renderer for LaTeX support
+        const renderer = new marked.Renderer();
+        const originalParagraph = renderer.paragraph.bind(renderer);
+        renderer.paragraph = (text) => {
+            text = text.replace(/\$\$([^\$]+)\$\$/g, (match, formula) => {
+                try {
+                    return '<div class="katex-block">' + katex.renderToString(formula.trim(), {displayMode: true}) + '</div>';
+                } catch(e) {
+                    return match;
+                }
+            });
+            text = text.replace(/\$([^\$]+)\$/g, (match, formula) => {
+                try {
+                    return katex.renderToString(formula.trim(), {displayMode: false});
+                } catch(e) {
+                    return match;
+                }
+            });
+            return originalParagraph(text);
+        };
+        marked.setOptions({ renderer });
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2225,10 +2249,11 @@
                     {
                         role: "system",
                         content: `You are a strict but helpful ${subject} teacher.
-                                  Explain step by step.
-                                  Simple language.
-                                  No emojis.
-                                  No filler.`
+Explain step by step.
+Simple language.
+No emojis.
+No filler.
+Use LaTeX for mathematical formulas: use $ for inline math (e.g., $x^2 + y^2$) and $$ for display math (e.g., $$\\frac{a}{b}$$).`
                     },
                     { role: "user", content: question }
                 ]);
@@ -2309,6 +2334,8 @@ STRICT RULES (MANDATORY):
 - Do NOT stop early
 - Do NOT add explanations
 - Do NOT add blank lines
+- Use LaTeX for all mathematical formulas with $ for inline math and $$ for display math
+- For example: $x^2 + y^2 = z^2$ for inline, $$\\frac{1}{2}$$ for display
 
 FORMAT RULES:
 - Each question must be on ONE line
@@ -2317,16 +2344,13 @@ If the question is MCQ:
 - Write ALL four options on the next single line
 - There must be EXACTLY TWO SPACES between each option
 - Format must be exactly:
-A)␠option1␠␠B)␠option2␠␠C)␠option3␠␠D)␠option4
+A) option1  B) option2  C) option3  D) option4
 
 `
                     },
                     {
                         role: "user",
-                        content: `Generate EXACTLY ${count} ${difficulty} ${subject} questions
-for ${grade} on the topic "${topic}"
-using the format: ${format}.
-`
+                        content: `Generate EXACTLY ${count} ${difficulty} ${subject} questions for ${grade} on the topic "${topic}" using the format: ${format}.`
                     }
                 ], 0.6, 10000);
 
@@ -2334,7 +2358,7 @@ using the format: ${format}.
                     .split("\n")
                     .map(q => q.trim())
                     .filter(q => q)
-                    .map(q => `<div class="question"><p>${q}</p></div>`)
+                    .map(q => `<div class="question"><p>${marked.parse(q)}</p></div>`)
                     .join("");
 
             } catch (err) {
@@ -2474,15 +2498,16 @@ using the format: ${format}.
                     {
                         role: "system",
                         content: `You are a helpful tutor.
-                          FORMAT RULES:
-                          - Use Markdown
-                          - Use headings (##)
-                          - Use bullet points
-                          - Use short paragraphs
-                          - Use code blocks when needed
-                          - Do NOT use HTML
-                          - No emojis
-                          SUBJECT: ${selectedSubject}`
+FORMAT RULES:
+- Use Markdown
+- Use headings (##)
+- Use bullet points
+- Use short paragraphs
+- Use code blocks when needed
+- Do NOT use HTML
+- No emojis
+- Use LaTeX for mathematical formulas: use $ for inline math (e.g., $x^2 + y^2$) and $$ for display math (e.g., $$\\frac{a}{b}$$)
+SUBJECT: ${selectedSubject}`
 
                     },
                     { role: "user", content: question }
