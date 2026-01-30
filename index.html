@@ -2498,16 +2498,15 @@ A) option1  B) option2  C) option3  D) option4
                     {
                         role: "system",
                         content: `You are a helpful tutor.
-FORMAT RULES:
-- Use Markdown
-- Use headings (##)
-- Use bullet points
-- Use short paragraphs
-- Use code blocks when needed
-- Do NOT use HTML
-- No emojis
-- Use LaTeX for mathematical formulas: use $ for inline math (e.g., $x^2 + y^2$) and $$ for display math (e.g., $$\\frac{a}{b}$$)
-SUBJECT: ${selectedSubject}`
+                          FORMAT RULES:
+                          - Use Markdown
+                          - Use headings (##)
+                          - Use bullet points
+                          - Use short paragraphs
+                          - Use code blocks when needed
+                          - Do NOT use HTML
+                          - No emojis
+                          SUBJECT: ${selectedSubject}`
 
                     },
                     { role: "user", content: question }
